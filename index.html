@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jujutsu RNG — Открытие кейсов</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500;700&family=Outfit:wght@400;500;600;700&family=Russo+One&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <canvas id="particles" aria-hidden="true"></canvas>
+  <div class="energy-field"></div>
+  <div class="scanlines"></div>
+  <div class="noise"></div>
+  <div class="vignette"></div>
+
+  <header class="header">
+    <div class="logo">
+      <div class="logo-seal">
+        <span class="logo-j">呪</span>
+        <span class="logo-ring"></span>
+      </div>
+      <div>
+        <h1>Jujutsu <span class="logo-accent">RNG</span></h1>
+        <p class="tagline">呪力 · Проклятая энергия в каждом кейсе</p>
+      </div>
+    </div>
+    <div class="header-stats">
+      <div class="stat-hex" title="Открыто кейсов">
+        <span class="stat-label">Кейсов</span>
+        <span class="stat-value" id="cases-opened">0</span>
+      </div>
+      <div class="stat-hex pity" title="До гарантированного 1-го ранга+">
+        <span class="stat-label">Пити</span>
+        <span class="stat-value"><span id="pity-counter">0</span><span class="pity-max">/50</span></span>
+        <div class="pity-bar"><div class="pity-fill" id="pity-fill"></div></div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab tab-shape active" data-tab="open"><span>Кейсы</span></button>
+    <button class="tab tab-shape" data-tab="collection"><span>Коллекция</span></button>
+    <button class="tab tab-shape" data-tab="rates"><span>Шансы</span></button>
+  </nav>
+
+  <main>
+    <section id="tab-open" class="panel active">
+      <div class="event-banner hidden" id="event-banner">
+        <div class="event-banner-glow"></div>
+        <div class="event-banner-content">
+          <span class="event-tag">LIMITED EVENT</span>
+          <h2 class="event-title" id="event-title">Охота на Тодзи</h2>
+          <p class="event-subtitle" id="event-subtitle">Получи Тодзи Фушигуро из эвентового кейса</p>
+          <div class="event-timer">
+            <span class="event-timer-label">До конца эвента</span>
+            <span class="event-timer-value" id="event-timer">—</span>
+          </div>
+        </div>
+        <div class="event-featured">
+          <span class="event-featured-emoji">🔪</span>
+          <span class="event-featured-name">Тодзи</span>
+        </div>
+      </div>
+
+      <div class="case-selector">
+        <button class="case-card case-hex selected" data-case="standard">
+          <div class="case-glow"></div>
+          <div class="case-visual standard">
+            <svg viewBox="0 0 64 64" class="case-icon"><path d="M32 4 L56 18 V46 L32 60 L8 46 V18 Z" fill="none" stroke="currentColor" stroke-width="2"/><rect x="22" y="24" width="20" height="16" rx="2" fill="currentColor" opacity="0.3"/></svg>
+          </div>
+          <h3>Стандартный</h3>
+          <p class="case-desc">Базовые шансы</p>
+        </button>
+        <button class="case-card case-hex" data-case="elite">
+          <div class="case-glow"></div>
+          <div class="case-visual elite">
+            <svg viewBox="0 0 64 64" class="case-icon"><path d="M32 4 L56 18 V46 L32 60 L8 46 V18 Z" fill="none" stroke="currentColor" stroke-width="2"/><polygon points="32,16 40,28 32,40 24,28" fill="currentColor" opacity="0.5"/></svg>
+          </div>
+          <h3>Элитный</h3>
+          <p class="case-desc">×2 шанс 2+ ранга</p>
+          <span class="case-badge">Элита</span>
+        </button>
+        <button class="case-card case-hex" data-case="special">
+          <div class="case-glow"></div>
+          <div class="case-visual special">
+            <svg viewBox="0 0 64 64" class="case-icon"><path d="M32 4 L56 18 V46 L32 60 L8 46 V18 Z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="32" cy="32" r="10" fill="currentColor" opacity="0.4"/><circle cx="32" cy="32" r="4" fill="currentColor"/></svg>
+          </div>
+          <h3>Особый</h3>
+          <p class="case-desc">Минимум 3-й ранг</p>
+          <span class="case-badge">特級</span>
+        </button>
+        <button class="case-card case-hex case-event hidden" data-case="event" id="event-case-card">
+          <div class="case-glow"></div>
+          <div class="case-visual event">
+            <svg viewBox="0 0 64 64" class="case-icon"><path d="M32 4 L56 18 V46 L32 60 L8 46 V18 Z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M32 14 L44 32 L32 50 L20 32 Z" fill="currentColor" opacity="0.35"/></svg>
+          </div>
+          <h3>Эвентовый</h3>
+          <p class="case-desc">Шанс на Тодзи ~4.5%</p>
+          <span class="case-badge event-badge">EVENT</span>
+        </button>
+      </div>
+
+      <div class="open-area">
+        <div class="reel-container" id="reel-container">
+          <div class="reel-frame">
+            <div class="reel-glow"></div>
+            <div class="reel-window">
+              <div class="reel-pointer top"></div>
+              <div class="reel-center-line"></div>
+              <div class="reel-track" id="reel-track"></div>
+              <div class="reel-pointer bottom"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="open-controls">
+          <button class="btn-open btn-cursed" id="btn-open">
+            <span class="btn-bg"></span>
+            <span class="btn-shine"></span>
+            <span class="btn-text">Разорвать печать</span>
+          </button>
+          <button class="btn-skip btn-ghost hidden" id="btn-skip">
+            <span>Пропустить</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="last-drop hidden" id="last-drop">
+        <p class="drop-label">Последний дроп</p>
+        <div class="drop-card" id="drop-card"></div>
+      </div>
+    </section>
+
+    <section id="tab-collection" class="panel">
+      <div class="collection-header">
+        <p class="collection-progress">
+          Собрано <strong id="collected-count">0</strong> из <strong id="total-count">0</strong>
+        </p>
+        <div class="filter-bar">
+          <button class="filter filter-chip active" data-filter="all">Все</button>
+          <button class="filter filter-chip" data-filter="below4">Ниже 4</button>
+          <button class="filter filter-chip" data-filter="grade4">4-й</button>
+          <button class="filter filter-chip" data-filter="grade3">3-й</button>
+          <button class="filter filter-chip" data-filter="grade2">2-й</button>
+          <button class="filter filter-chip" data-filter="grade1">1-й</button>
+          <button class="filter filter-chip" data-filter="special">Особый</button>
+          <button class="filter filter-chip filter-secret" data-filter="secret">Секретный</button>
+          <button class="filter filter-chip filter-event" data-filter="event">Эвент</button>
+        </div>
+        <label class="sort-label">
+          Сортировка
+          <select id="sort-select" class="select-custom">
+            <option value="rarity-desc">Редкость ↓</option>
+            <option value="rarity-asc">Редкость ↑</option>
+            <option value="name">Имя</option>
+            <option value="count">Количество</option>
+          </select>
+        </label>
+      </div>
+      <div class="collection-grid" id="collection-grid"></div>
+    </section>
+
+    <section id="tab-rates" class="panel">
+      <h2 class="rates-title">Таблица шансов</h2>
+      <p class="rates-note" id="rates-note">Стандартный кейс. Элитный и особый модифицируют распределение.</p>
+      <div class="rates-table" id="rates-table"></div>
+      <div class="rates-info">
+        <h3>Эвентовый кейс</h3>
+        <p>Каждые <strong>50</strong> открытий без 1-го ранга или выше — гарантированный персонаж <strong>1-го ранга и выше</strong>.</p>
+        <h3>Эвент «Охота на Тодзи»</h3>
+        <p>Только в <strong>эвентовом кейсе</strong> — шанс ~<strong>4.5%</strong> получить эксклюзивного <strong>Тодзи Фушигуро</strong>. Эвент временный!</p>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal-overlay hidden" id="result-modal">
+    <div class="modal-backdrop"></div>
+    <div class="burst" id="burst"></div>
+    <div class="modal-content modal-hex">
+      <div class="modal-border-glow"></div>
+      <div class="modal-rays"></div>
+      <div class="modal-sparks" id="modal-sparks"></div>
+      <p class="modal-rarity" id="modal-rarity"></p>
+      <div class="modal-character-wrap">
+        <div class="modal-character" id="modal-character"></div>
+      </div>
+      <h2 class="modal-name" id="modal-name"></h2>
+      <p class="modal-desc" id="modal-desc"></p>
+      <p class="modal-duplicate hidden" id="modal-duplicate"></p>
+      <button class="btn-claim btn-cursed" id="btn-claim">
+        <span class="btn-bg"></span>
+        <span class="btn-text">Забрать</span>
+      </button>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>Прогресс сохраняется автоматически · Jujutsu Kaisen fan project</p>
+    <button class="btn-reset" id="btn-reset" title="Сбросить прогресс">Сброс</button>
+  </footer>
+
+  <script src="characters.js"></script>
+  <script src="effects.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
