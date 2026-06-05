@@ -37,6 +37,11 @@
         <span class="stat-value"><span id="pity-counter">0</span><span class="pity-max">/50</span></span>
         <div class="pity-bar"><div class="pity-fill" id="pity-fill"></div></div>
       </div>
+      <div class="stat-hex fingers hidden" id="fingers-stat" title="Пальцы Сукуны">
+        <span class="stat-label">Пальцы</span>
+        <span class="stat-value"><span id="fingers-count">0</span><span class="pity-max">/20</span></span>
+        <div class="pity-bar fingers-bar"><div class="pity-fill fingers-fill" id="fingers-fill"></div></div>
+      </div>
     </div>
   </header>
 
@@ -44,6 +49,7 @@
     <button class="tab tab-shape active" data-tab="open"><span>Кейсы</span></button>
     <button class="tab tab-shape" data-tab="collection"><span>Коллекция</span></button>
     <button class="tab tab-shape" data-tab="rates"><span>Шансы</span></button>
+    <button class="tab tab-shape" data-tab="evolution"><span>Пальцы Сукуны</span></button>
     <button class="tab tab-shape" data-tab="changelog"><span>Обновления</span></button>
   </nav>
 
@@ -177,12 +183,42 @@
       </div>
     </section>
 
+    <section id="tab-evolution" class="panel">
+      <h2 class="evo-title">Пальцы Сукуны</h2>
+      <p class="evo-subtitle">Дубликаты Сукуны дают пальцы. 20 пальцев — одна эволюция</p>
+      <div class="evo-fingers-banner">
+        <span class="evo-banner-icon">🖐️</span>
+        <span>Пальцев: <strong id="evo-fingers-total">0</strong></span>
+      </div>
+      <div class="evo-list" id="evo-list"></div>
+    </section>
+
     <section id="tab-changelog" class="panel">
       <h2 class="changelog-title">Лог обновлений</h2>
       <p class="changelog-subtitle">История изменений Jujutsu RNG</p>
       <div class="changelog-list" id="changelog-list"></div>
     </section>
   </main>
+
+  <div class="modal-overlay hidden" id="evolve-modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content modal-hex modal-evolve">
+      <div class="modal-border-glow"></div>
+      <div class="modal-rays"></div>
+      <p class="modal-rarity">★ ЭВОЛЮЦИЯ</p>
+      <div class="evo-transform">
+        <span class="evo-from" id="evo-from-emoji">👹</span>
+        <span class="evo-arrow">→</span>
+        <span class="evo-to" id="evo-to-emoji">🔥</span>
+      </div>
+      <h2 class="modal-name" id="evo-name">Хейан Сукуна</h2>
+      <p class="modal-desc" id="evo-desc">Эра Хейан · Истинная форма</p>
+      <button class="btn-claim btn-cursed" id="btn-evo-close">
+        <span class="btn-bg"></span>
+        <span class="btn-text">Принять силу</span>
+      </button>
+    </div>
+  </div>
 
   <div class="modal-overlay hidden" id="result-modal">
     <div class="modal-backdrop"></div>

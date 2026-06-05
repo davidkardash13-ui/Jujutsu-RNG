@@ -1,11 +1,12 @@
 (function () {
   'use strict';
 
-  const STORAGE_KEY = 'jujutsu_rng_save_v2';
+  const STORAGE_KEY = 'jujutsu_rng_save_v3';
 
   const state = {
     casesOpened: 0,
     pity: 0,
+    sukunaFingers: 0,
     inventory: {},
     selectedCase: 'standard',
     isSpinning: false,
@@ -20,13 +21,18 @@
 
   function loadSave() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      let raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) raw = localStorage.getItem('jujutsu_rng_save_v2');
       if (!raw) return;
       const data = JSON.parse(raw);
       state.casesOpened = data.casesOpened ?? 0;
       state.pity = data.pity ?? 0;
+      state.sukunaFingers = data.sukunaFingers ?? 0;
       state.inventory = data.inventory ?? {};
       state.lastDrop = data.lastDrop ?? null;
+      if (!data.sukunaFingers && (state.inventory.sukuna || 0) > 1) {
+        state.sukunaFingers = state.inventory.sukuna - 1;
+      }
     } catch (_) {
       /* ignore corrupt save */
     }
@@ -38,6 +44,7 @@
       JSON.stringify({
         casesOpened: state.casesOpened,
         pity: state.pity,
+        sukunaFingers: state.sukunaFingers,
         inventory: state.inventory,
         lastDrop: state.lastDrop,
       })
@@ -93,7 +100,7 @@
 
     const caseDef = CASES[caseId];
     let pool = CHARACTERS.filter(
-      (c) => c.rarity === rarityId && !c.event
+      (c) => c.rarity === rarityId && !c.event && !c.evolveOnly
     );
 
     if (caseDef.minOrder > 0) {
@@ -102,12 +109,12 @@
 
     if (pool.length === 0) {
       pool = CHARACTERS.filter(
-        (c) => RARITIES[c.rarity].order >= caseDef.minOrder && !c.event
+        (c) => RARITIES[c.rarity].order >= caseDef.minOrder && !c.event && !c.evolveOnly
       );
     }
 
     if (pool.length === 0) {
-      pool = CHARACTERS.filter((c) => !c.event);
+      pool = CHARACTERS.filter((c) => !c.event && !c.evolveOnly);
     }
 
     return pool[Math.floor(Math.random() * pool.length)];
@@ -116,8 +123,8 @@
   function pickReelFiller() {
     const rollable = Object.keys(RARITIES).filter((id) => id !== 'event' && RARITIES[id].weight > 0);
     const r = rollable[Math.floor(Math.random() * rollable.length)];
-    const pool = CHARACTERS.filter((c) => c.rarity === r && !c.event);
-    if (pool.length === 0) return CHARACTERS.find((c) => !c.event);
+    const pool = CHARACTERS.filter((c) => c.rarity === r && !c.event && !c.evolveOnly);
+    if (pool.length === 0) return CHARACTERS.find((c) => !c.event && !c.evolveOnly);
     return pool[Math.floor(Math.random() * pool.length)];
   }
 
@@ -169,10 +176,57 @@
     const isDuplicate = (state.inventory[character.id] || 0) > 0;
     state.inventory[character.id] = (state.inventory[character.id] || 0) + 1;
 
-    state.lastDrop = { character, isDuplicate };
+    let fingerGain = 0;
+    if (character.id === FINGER_SOURCE_ID && isDuplicate) {
+      state.sukunaFingers += 1;
+      fingerGain = 1;
+    }
+
+    state.lastDrop = { character, isDuplicate, fingerGain };
 
     saveGame();
-    return { character, isDuplicate, rarityId };
+    return { character, isDuplicate, rarityId, fingerGain };
+  }
+
+  function owns(id) {
+    return (state.inventory[id] || 0) > 0;
+  }
+
+  function getEvolution(evoId) {
+    return EVOLUTIONS.find((e) => e.id === evoId);
+  }
+
+  function canEvolve(evo) {
+    return (
+      owns(evo.baseId) &&
+      !owns(evo.evolvedId) &&
+      state.sukunaFingers >= evo.fingersRequired
+    );
+  }
+
+  function hasPendingEvolutions() {
+    return EVOLUTIONS.some((e) => owns(e.baseId) && !owns(e.evolvedId));
+  }
+
+  function shouldShowFingersStat() {
+    return state.sukunaFingers > 0 || hasPendingEvolutions();
+  }
+
+  function evolveCharacter(evoId) {
+    const evo = getEvolution(evoId);
+    if (!evo || !canEvolve(evo)) return false;
+
+    state.sukunaFingers -= evo.fingersRequired;
+    state.inventory[evo.evolvedId] = 1;
+    saveGame();
+    return {
+      evolved: getCharacterById(evo.evolvedId),
+      base: getCharacterById(evo.baseId),
+    };
+  }
+
+  function getCharacterById(id) {
+    return CHARACTERS.find((c) => c.id === id);
   }
 
   function buildReelItems(winner, count = 40) {
@@ -257,7 +311,7 @@
   }
 
   function showResultModal(result) {
-    const { character, isDuplicate } = result;
+    const { character, isDuplicate, fingerGain } = result;
     const r = RARITIES[character.rarity];
     const modal = $('#result-modal');
 
@@ -272,7 +326,10 @@
     modalContent.dataset.rarity = character.rarity;
 
     const dupEl = $('#modal-duplicate');
-    if (isDuplicate) {
+    if (result.fingerGain) {
+      dupEl.textContent = `+1 палец Сукуны! (всего: ${state.sukunaFingers})`;
+      dupEl.classList.remove('hidden');
+    } else if (isDuplicate) {
       dupEl.textContent = 'Уже в коллекции — дубликат';
       dupEl.classList.remove('hidden');
     } else {
@@ -334,6 +391,21 @@
     $('#pity-counter').textContent = state.pity;
     const fill = $('#pity-fill');
     if (fill) fill.style.width = `${(state.pity / PITY_MAX) * 100}%`;
+
+    const fingersStat = $('#fingers-stat');
+    const fingers = state.sukunaFingers || 0;
+    if (fingersStat) {
+      if (shouldShowFingersStat()) {
+        fingersStat.classList.remove('hidden');
+        $('#fingers-count').textContent = fingers;
+        const fFill = $('#fingers-fill');
+        if (fFill) {
+          fFill.style.width = `${Math.min(fingers / FINGERS_REQUIRED, 1) * 100}%`;
+        }
+      } else {
+        fingersStat.classList.add('hidden');
+      }
+    }
   }
 
   function updateOpenButton() {
@@ -376,13 +448,14 @@
       const count = state.inventory[char.id] || 0;
       const r = RARITIES[char.rarity];
       const card = document.createElement('div');
-      card.className = `char-card ${count > 0 ? 'owned' : 'not-owned'}${char.event ? ' char-event' : ''}`;
+      card.className = `char-card ${count > 0 ? 'owned' : 'not-owned'}${char.event ? ' char-event' : ''}${char.evolveOnly ? ' char-evolve-only' : ''}`;
       card.dataset.rarity = char.rarity;
       if (char.event) card.dataset.event = char.event;
       card.style.setProperty('--rarity-color', r.color);
       card.style.setProperty('--rarity-glow', r.glow);
       card.style.animationDelay = `${i * 0.03}s`;
       card.innerHTML = `
+        ${char.evolveOnly && count === 0 ? '<span class="char-evolve-badge">Эволюция</span>' : ''}
         ${char.event && !isEventActive(char.event) && count === 0 ? '<span class="char-event-ended">Эвент завершён</span>' : ''}
         ${count > 1 ? `<span class="char-count">×${count}</span>` : count === 1 ? '<span class="char-count">✓</span>' : ''}
         <div class="char-frame">
@@ -397,6 +470,104 @@
 
     $('#collected-count').textContent = getCollectedCount();
     $('#total-count').textContent = CHARACTERS.length;
+  }
+
+  function renderEvolution() {
+    const list = $('#evo-list');
+    const totalEl = $('#evo-fingers-total');
+    if (!list) return;
+
+    const fingers = state.sukunaFingers || 0;
+    if (totalEl) totalEl.textContent = fingers;
+
+    list.innerHTML = EVOLUTIONS.map((evo) => {
+      const base = getCharacterById(evo.baseId);
+      const evolved = getCharacterById(evo.evolvedId);
+      const owned = owns(evo.baseId);
+      const done = owns(evo.evolvedId);
+      const ready = canEvolve(evo);
+      const req = evo.fingersRequired;
+
+      let statusText;
+      let statusClass = '';
+      if (done) {
+        statusText = 'Эволюция получена';
+        statusClass = 'evo-done';
+      } else if (!owned) {
+        statusText = `Нужен ${base.name}`;
+        statusClass = 'evo-locked';
+      } else if (ready) {
+        statusText = 'Можно эволюционировать!';
+        statusClass = 'evo-ready';
+      } else {
+        statusText = `Нужно ${req} пальцев (есть ${fingers})`;
+        statusClass = 'evo-progress';
+      }
+
+      return `
+        <div class="evo-card ${done ? 'evo-card-done' : ''}">
+          <div class="evo-card-glow"></div>
+          <div class="evo-characters">
+            <div class="evo-char ${owned ? 'owned' : 'locked'}">
+              <span class="evo-emoji">${base.emoji}</span>
+              <span class="evo-char-name">${base.name}</span>
+            </div>
+            <div class="evo-arrow-inline">→</div>
+            <div class="evo-char ${done ? 'owned' : 'locked'}">
+              <span class="evo-emoji">${evolved.emoji}</span>
+              <span class="evo-char-name">${evolved.name}</span>
+            </div>
+          </div>
+          <p class="evo-cost">🖐️ ${req} пальцев</p>
+          <p class="evo-status ${statusClass}">${statusText}</p>
+          <button class="btn-evolve btn-cursed" data-evolve="${evo.id}" ${ready ? '' : 'disabled'}>
+            <span class="btn-bg"></span>
+            <span class="btn-text">${done ? 'Получено' : ready ? 'Эволюционировать' : 'Недоступно'}</span>
+          </button>
+        </div>
+      `;
+    }).join('');
+
+    list.querySelectorAll('[data-evolve]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        if (!btn.disabled) handleEvolve(btn.dataset.evolve);
+      });
+    });
+  }
+
+  function showEvolveModal(result) {
+    const { evolved, base } = result;
+    const modal = $('#evolve-modal');
+    const r = RARITIES[evolved.rarity];
+    $('#evo-from-emoji').textContent = base.emoji;
+    $('#evo-to-emoji').textContent = evolved.emoji;
+    $('#evo-name').textContent = evolved.name;
+    $('#evo-desc').textContent = `${evolved.desc} · ${evolved.technique}`;
+
+    const modalContent = modal.querySelector('.modal-content');
+    modalContent.style.setProperty('--modal-color', r.color);
+    modalContent.style.setProperty('--modal-glow', r.glow);
+
+    if (window.JJKEffects) {
+      window.JJKEffects.screenShake(1.4);
+      const rect = modalContent.getBoundingClientRect();
+      window.JJKEffects.burst(rect.left + rect.width / 2, rect.top + rect.height / 2, r.color, 50);
+    }
+
+    modal.classList.remove('hidden');
+  }
+
+  function handleEvolve(evoId) {
+    const result = evolveCharacter(evoId);
+    if (!result) return;
+    showEvolveModal(result);
+    updateUI();
+  }
+
+  function hideEvolveModal() {
+    $('#evolve-modal').classList.add('hidden');
+    renderEvolution();
+    renderCollection();
   }
 
   function renderRates() {
@@ -566,6 +737,7 @@
     renderCollection();
     renderRates();
     renderChangelog();
+    renderEvolution();
   }
 
   async function handleOpen() {
@@ -600,6 +772,7 @@
         tab.classList.add('active');
         $(`#tab-${tab.dataset.tab}`).classList.add('active');
         if (tab.dataset.tab === 'collection') renderCollection();
+        if (tab.dataset.tab === 'evolution') renderEvolution();
       });
     });
   }
@@ -633,6 +806,8 @@
       if (skipResolve) skipResolve();
     });
     $('#btn-claim').addEventListener('click', hideResultModal);
+    $('#btn-evo-close').addEventListener('click', hideEvolveModal);
+    $('#evolve-modal .modal-backdrop').addEventListener('click', hideEvolveModal);
     $('#result-modal .modal-backdrop').addEventListener('click', hideResultModal);
     $('#btn-reset').addEventListener('click', () => {
       if (confirm('Сбросить весь прогресс? Это нельзя отменить.')) {

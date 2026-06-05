@@ -83,7 +83,17 @@ const CHARACTERS = [
   { id: 'gege', name: 'Гэгэ Акутами', desc: 'Создатель · За кадром', rarity: 'secret', emoji: '✍️', technique: 'Сюжетный поворот' },
 
   { id: 'gojo', name: 'Сатору Годжо', desc: 'Шесть глаз · Безграничный', rarity: 'special', emoji: '👁️', technique: 'Безграничный' },
-  { id: 'sukuna', name: 'Рёмен Сукуна', desc: 'Король проклятий', rarity: 'special', emoji: '👹', technique: 'Распад' },
+  { id: 'sukuna', name: 'Рёмен Сукуна', desc: 'Король проклятий', rarity: 'special', emoji: '👹', technique: 'Распад', givesFinger: true },
+  {
+    id: 'sukuna_heian',
+    name: 'Хейан Сукуна',
+    desc: 'Эра Хейан · Истинная форма',
+    rarity: 'secret',
+    emoji: '🔥',
+    technique: 'Святилище / Метеор',
+    evolveOnly: true,
+    evolvesFrom: 'sukuna',
+  },
   { id: 'yuta', name: 'Юта Оккоцу', desc: 'Особый класс · Рика', rarity: 'special', emoji: '💍', technique: 'Копирование' },
   { id: 'kenjaku', name: 'Кэндзяку', desc: 'Древний проклятый мозг', rarity: 'special', emoji: '🧠', technique: 'Переселение' },
   { id: 'mahito', name: 'Махито', desc: 'Особый · Идентичность', rarity: 'special', emoji: '🫀', technique: 'Праздная трансформация' },
@@ -101,7 +111,27 @@ const CHARACTERS = [
   { id: 'choso', name: 'Тёсо', desc: 'Полукровка · Кровь', rarity: 'grade1', emoji: '🩸', technique: 'Сверхновая' },
 
   { id: 'yuji', name: 'Юдзи Итадори', desc: 'Сосуд Сукуны · 2-й ранг', rarity: 'grade2', emoji: '⚡', technique: 'Чёрная вспышка' },
+  {
+    id: 'yuji_vessel',
+    name: 'Юдзи Итадори (Сосуд Сукуны)',
+    desc: 'Пробуждённый сосуд · Полная сила',
+    rarity: 'special',
+    emoji: '🩸',
+    technique: 'Распад / Чёрная вспышка',
+    evolveOnly: true,
+    evolvesFrom: 'yuji',
+  },
   { id: 'megumi', name: 'Мэгуми Фусигуро', desc: 'Десять теневых · 2-й ранг', rarity: 'grade2', emoji: '🐺', technique: 'Син Сэнгэн Мэйдзи Тэнсё' },
+  {
+    id: 'meguna',
+    name: 'Мегуна',
+    desc: 'Сукуна в теле Мэгуми',
+    rarity: 'special',
+    emoji: '☠️',
+    technique: 'Теневое сосуд / Распад',
+    evolveOnly: true,
+    evolvesFrom: 'megumi',
+  },
   { id: 'nobara', name: 'Нобара Кугисаки', desc: 'Столб · 2-й ранг', rarity: 'grade2', emoji: '🔨', technique: 'Столб' },
   { id: 'panda', name: 'Панда', desc: 'Цукумо · 2-й ранг', rarity: 'grade2', emoji: '🐼', technique: 'Полная сила' },
   { id: 'maki', name: 'Маки Дзэнин', desc: 'Оружие · 2-й ранг', rarity: 'grade2', emoji: '⚔️', technique: 'Полная сила' },
@@ -233,3 +263,28 @@ const CASES = {
 
 const PITY_MAX = 50;
 const PITY_MIN_ORDER = RARITIES.grade1.order;
+
+const FINGERS_REQUIRED = 20;
+const FINGER_SOURCE_ID = 'sukuna';
+
+/** Эволюции за 20 пальцев Сукуны */
+const EVOLUTIONS = [
+  {
+    id: 'sukuna_heian',
+    baseId: 'sukuna',
+    evolvedId: 'sukuna_heian',
+    fingersRequired: FINGERS_REQUIRED,
+  },
+  {
+    id: 'yuji_vessel',
+    baseId: 'yuji',
+    evolvedId: 'yuji_vessel',
+    fingersRequired: FINGERS_REQUIRED,
+  },
+  {
+    id: 'meguna',
+    baseId: 'megumi',
+    evolvedId: 'meguna',
+    fingersRequired: FINGERS_REQUIRED,
+  },
+];

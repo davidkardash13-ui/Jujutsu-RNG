@@ -1293,6 +1293,224 @@ main {
   border-color: var(--crimson);
 }
 
+/* ── Evolution ── */
+.evo-title {
+  font-family: var(--font-display);
+  font-size: 1.85rem;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.35rem;
+}
+
+.evo-subtitle {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  margin-bottom: 1.75rem;
+}
+
+.evo-card {
+  position: relative;
+  padding: 2rem 1.5rem;
+  clip-path: polygon(20px 0, calc(100% - 20px) 0, 100% 20px, 100% calc(100% - 20px), calc(100% - 20px) 100%, 20px 100%, 0 calc(100% - 20px), 0 20px);
+  background: var(--bg-card);
+  border: 1px solid rgba(248, 113, 113, 0.25);
+  text-align: center;
+  overflow: hidden;
+}
+
+.evo-card-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(248, 113, 113, 0.12), transparent 70%);
+  pointer-events: none;
+}
+
+.evo-characters {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.evo-char {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  opacity: 0.35;
+  filter: grayscale(0.8);
+  transition: all 0.3s;
+}
+
+.evo-char.owned {
+  opacity: 1;
+  filter: none;
+}
+
+.evo-emoji { font-size: 3rem; }
+
+.evo-char-name {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  max-width: 110px;
+  line-height: 1.2;
+}
+
+.evo-fingers-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.65rem 1.25rem;
+  margin-bottom: 1.5rem;
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 10px 100%, 0 50%);
+  font-size: 0.95rem;
+}
+
+.evo-fingers-banner strong {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  color: #f87171;
+}
+
+.evo-banner-icon { font-size: 1.25rem; }
+
+.evo-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.evo-card-done {
+  opacity: 0.85;
+  border-color: rgba(74, 222, 128, 0.3) !important;
+}
+
+.evo-arrow-inline {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: #f87171;
+}
+
+.evo-cost {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.evo-card .evo-characters {
+  margin-bottom: 0.75rem;
+}
+
+.evo-card .btn-evolve {
+  width: 100%;
+  max-width: 260px;
+}
+
+.evo-status {
+  font-size: 0.88rem;
+  margin-bottom: 1.25rem;
+  position: relative;
+  z-index: 1;
+}
+
+.evo-status.evo-ready { color: #4ade80; font-weight: 600; }
+.evo-status.evo-done { color: var(--accent-bright); }
+.evo-status.evo-locked { color: var(--text-muted); }
+.evo-status.evo-progress { color: var(--text-muted); }
+
+.btn-evolve {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  letter-spacing: 0.1em;
+  padding: 0.9rem 2.5rem;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 14px 100%, 0 50%);
+}
+
+.btn-evolve .btn-bg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #dc2626, #7f1d1d, #f87171);
+  z-index: -1;
+}
+
+.btn-evolve:not(:disabled):hover {
+  transform: scale(1.03);
+  filter: brightness(1.1);
+}
+
+.btn-evolve:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.stat-hex.fingers .stat-value { color: #f87171; }
+.fingers-fill { background: linear-gradient(90deg, #dc2626, #f87171); }
+
+.char-evolve-badge {
+  position: absolute;
+  top: 0.4rem;
+  left: 0.4rem;
+  font-size: 0.55rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #f87171;
+  background: rgba(220, 38, 38, 0.2);
+  padding: 0.15rem 0.35rem;
+  clip-path: polygon(3px 0, calc(100% - 3px) 0, 100% 50%, calc(100% - 3px) 100%, 3px 100%, 0 50%);
+}
+
+.char-card.owned.char-evolve-only {
+  animation: cardAppear 0.4s ease both, eventCardGlow 2.5s ease infinite;
+  border-color: #f87171;
+}
+
+.modal-evolve .evo-transform {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1rem 0;
+  position: relative;
+  z-index: 1;
+}
+
+.evo-from, .evo-to {
+  font-size: 3.5rem;
+  animation: charBounce 0.6s ease both;
+}
+
+.evo-to { animation-delay: 0.3s; }
+
+.evo-arrow {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: #f87171;
+  animation: evoArrow 1s ease infinite;
+}
+
+@keyframes evoArrow {
+  0%, 100% { opacity: 0.5; transform: translateX(0); }
+  50% { opacity: 1; transform: translateX(4px); }
+}
+
+.modal-evolve {
+  --modal-color: #f87171;
+  --modal-glow: rgba(248, 113, 113, 0.7);
+}
+
 /* ── Changelog ── */
 .changelog-title {
   font-family: var(--font-display);
