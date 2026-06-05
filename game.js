@@ -521,12 +521,51 @@
     $('#event-timer').textContent = formatTimeLeft(left);
   }
 
+  function renderChangelog() {
+    const list = $('#changelog-list');
+    if (!list || typeof CHANGELOG === 'undefined') return;
+
+    list.innerHTML = CHANGELOG.map((entry) => {
+      const tags = (entry.tags || [])
+        .map((t) => `<span class="changelog-tag tag-${t}">${TAG_LABELS[t] || t}</span>`)
+        .join('');
+
+      const items = entry.changes
+        .map((c) => `<li>${c}</li>`)
+        .join('');
+
+      return `
+        <article class="changelog-entry">
+          <div class="changelog-entry-head">
+            <div>
+              <span class="changelog-version">v${entry.version}</span>
+              <h3 class="changelog-entry-title">${entry.title}</h3>
+            </div>
+            <time class="changelog-date">${formatChangelogDate(entry.date)}</time>
+          </div>
+          <div class="changelog-tags">${tags}</div>
+          <ul class="changelog-changes">${items}</ul>
+        </article>
+      `;
+    }).join('');
+  }
+
+  function formatChangelogDate(iso) {
+    const [y, m, d] = iso.split('-').map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString('ru-RU', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+  }
+
   function updateUI() {
     updateEventUI();
     updateHeader();
     updateOpenButton();
     renderCollection();
     renderRates();
+    renderChangelog();
   }
 
   async function handleOpen() {

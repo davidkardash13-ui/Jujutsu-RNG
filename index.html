@@ -44,6 +44,7 @@
     <button class="tab tab-shape active" data-tab="open"><span>Кейсы</span></button>
     <button class="tab tab-shape" data-tab="collection"><span>Коллекция</span></button>
     <button class="tab tab-shape" data-tab="rates"><span>Шансы</span></button>
+    <button class="tab tab-shape" data-tab="changelog"><span>Обновления</span></button>
   </nav>
 
   <main>
@@ -175,6 +176,12 @@
         <p>Только в <strong>эвентовом кейсе</strong> — шанс ~<strong>4.5%</strong> получить эксклюзивного <strong>Тодзи Фушигуро</strong>. Эвент временный!</p>
       </div>
     </section>
+
+    <section id="tab-changelog" class="panel">
+      <h2 class="changelog-title">Лог обновлений</h2>
+      <p class="changelog-subtitle">История изменений Jujutsu RNG</p>
+      <div class="changelog-list" id="changelog-list"></div>
+    </section>
   </main>
 
   <div class="modal-overlay hidden" id="result-modal">
@@ -204,6 +211,7 @@
   </footer>
 
   <script src="characters.js"></script>
+  <script src="changelog.js"></script>
   <script src="effects.js"></script>
   <script src="game.js"></script>
 </body>
