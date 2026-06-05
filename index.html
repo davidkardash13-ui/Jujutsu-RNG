@@ -28,6 +28,10 @@
       </div>
     </div>
     <div class="header-stats">
+      <div class="stat-hex currency" title="Местная валюта">
+        <span class="stat-label">Баланс</span>
+        <span class="stat-value" id="yen-balance">0 ¥</span>
+      </div>
       <div class="stat-hex" title="Открыто кейсов">
         <span class="stat-label">Кейсов</span>
         <span class="stat-value" id="cases-opened">0</span>
@@ -176,10 +180,13 @@
       <p class="rates-note" id="rates-note">Стандартный кейс. Элитный и особый модифицируют распределение.</p>
       <div class="rates-table" id="rates-table"></div>
       <div class="rates-info">
-        <h3>Эвентовый кейс</h3>
+        <h3>Система пити</h3>
         <p>Каждые <strong>50</strong> открытий без 1-го ранга или выше — гарантированный персонаж <strong>1-го ранга и выше</strong>.</p>
         <h3>Эвент «Охота на Тодзи»</h3>
         <p>Только в <strong>эвентовом кейсе</strong> — шанс ~<strong>4.5%</strong> получить эксклюзивного <strong>Тодзи Фушигуро</strong>. Эвент временный!</p>
+        <h3>Местная валюта ¥</h3>
+        <p>За каждого полученного персонажа начисляются йены по редкости. Дубликаты дают <strong>50%</strong> от суммы.</p>
+        <div class="rates-table yen-table" id="yen-table"></div>
       </div>
     </section>
 
@@ -233,6 +240,7 @@
       </div>
       <h2 class="modal-name" id="modal-name"></h2>
       <p class="modal-desc" id="modal-desc"></p>
+      <p class="modal-yen hidden" id="modal-yen"></p>
       <p class="modal-duplicate hidden" id="modal-duplicate"></p>
       <button class="btn-claim btn-cursed" id="btn-claim">
         <span class="btn-bg"></span>

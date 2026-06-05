@@ -7,6 +7,7 @@
     casesOpened: 0,
     pity: 0,
     sukunaFingers: 0,
+    yen: 0,
     inventory: {},
     selectedCase: 'standard',
     isSpinning: false,
@@ -28,6 +29,7 @@
       state.casesOpened = data.casesOpened ?? 0;
       state.pity = data.pity ?? 0;
       state.sukunaFingers = data.sukunaFingers ?? 0;
+      state.yen = data.yen ?? 0;
       state.inventory = data.inventory ?? {};
       state.lastDrop = data.lastDrop ?? null;
       if (!data.sukunaFingers && (state.inventory.sukuna || 0) > 1) {
@@ -45,10 +47,27 @@
         casesOpened: state.casesOpened,
         pity: state.pity,
         sukunaFingers: state.sukunaFingers,
+        yen: state.yen,
         inventory: state.inventory,
         lastDrop: state.lastDrop,
       })
     );
+  }
+
+  function formatYen(amount) {
+    return `${amount.toLocaleString('ru-RU')} ¥`;
+  }
+
+  function getCurrencyReward(rarityId, isDuplicate) {
+    const reward = RARITIES[rarityId]?.currencyReward ?? 0;
+    if (isDuplicate) return Math.floor(reward * 0.5);
+    return reward;
+  }
+
+  function grantCurrencyForCharacter(character, isDuplicate) {
+    const amount = getCurrencyReward(character.rarity, isDuplicate);
+    if (amount > 0) state.yen += amount;
+    return amount;
   }
 
   function getCaseWeights(caseId) {
@@ -182,10 +201,12 @@
       fingerGain = 1;
     }
 
-    state.lastDrop = { character, isDuplicate, fingerGain };
+    const yenGain = grantCurrencyForCharacter(character, isDuplicate);
+
+    state.lastDrop = { character, isDuplicate, fingerGain, yenGain };
 
     saveGame();
-    return { character, isDuplicate, rarityId, fingerGain };
+    return { character, isDuplicate, rarityId, fingerGain, yenGain };
   }
 
   function owns(id) {
@@ -218,11 +239,11 @@
 
     state.sukunaFingers -= evo.fingersRequired;
     state.inventory[evo.evolvedId] = 1;
+    const evolved = getCharacterById(evo.evolvedId);
+    const base = getCharacterById(evo.baseId);
+    const yenGain = grantCurrencyForCharacter(evolved, false);
     saveGame();
-    return {
-      evolved: getCharacterById(evo.evolvedId),
-      base: getCharacterById(evo.baseId),
-    };
+    return { evolved, base, yenGain };
   }
 
   function getCharacterById(id) {
@@ -311,7 +332,7 @@
   }
 
   function showResultModal(result) {
-    const { character, isDuplicate, fingerGain } = result;
+    const { character, isDuplicate, fingerGain, yenGain } = result;
     const r = RARITIES[character.rarity];
     const modal = $('#result-modal');
 
@@ -324,6 +345,14 @@
     modalContent.style.setProperty('--modal-color', r.color);
     modalContent.style.setProperty('--modal-glow', r.glow);
     modalContent.dataset.rarity = character.rarity;
+
+    const yenEl = $('#modal-yen');
+    if (yenGain > 0) {
+      yenEl.textContent = `+${formatYen(yenGain)}`;
+      yenEl.classList.remove('hidden');
+    } else {
+      yenEl.classList.add('hidden');
+    }
 
     const dupEl = $('#modal-duplicate');
     if (result.fingerGain) {
@@ -388,6 +417,7 @@
 
   function updateHeader() {
     $('#cases-opened').textContent = state.casesOpened.toLocaleString('ru-RU');
+    $('#yen-balance').textContent = formatYen(state.yen || 0);
     $('#pity-counter').textContent = state.pity;
     const fill = $('#pity-fill');
     if (fill) fill.style.width = `${(state.pity / PITY_MAX) * 100}%`;
@@ -536,13 +566,13 @@
   }
 
   function showEvolveModal(result) {
-    const { evolved, base } = result;
+    const { evolved, base, yenGain } = result;
     const modal = $('#evolve-modal');
     const r = RARITIES[evolved.rarity];
     $('#evo-from-emoji').textContent = base.emoji;
     $('#evo-to-emoji').textContent = evolved.emoji;
     $('#evo-name').textContent = evolved.name;
-    $('#evo-desc').textContent = `${evolved.desc} · ${evolved.technique}`;
+    $('#evo-desc').textContent = `${evolved.desc} · ${evolved.technique}${yenGain ? ' · ' + formatYen(yenGain) : ''}`;
 
     const modalContent = modal.querySelector('.modal-content');
     modalContent.style.setProperty('--modal-color', r.color);
@@ -647,6 +677,26 @@
       .join('');
   }
 
+  function renderYenTable() {
+    const table = $('#yen-table');
+    if (!table) return;
+
+    const sorted = Object.entries(RARITIES).sort((a, b) => b[1].order - a[1].order);
+
+    table.innerHTML = sorted
+      .filter(([, r]) => r.currencyReward)
+      .map(([, r]) => {
+        const dup = Math.floor(r.currencyReward * 0.5);
+        return `
+          <div class="rate-row" style="--rate-color: ${r.color}">
+            <span class="rate-name">${r.name}</span>
+            <span class="rate-percent yen-reward">${formatYen(r.currencyReward)} <span class="yen-dup">/ ${formatYen(dup)} дубль</span></span>
+          </div>
+        `;
+      })
+      .join('');
+  }
+
   function initReelPlaceholder() {
     const track = $('#reel-track');
     track.innerHTML = '';
@@ -736,6 +786,7 @@
     updateOpenButton();
     renderCollection();
     renderRates();
+    renderYenTable();
     renderChangelog();
     renderEvolution();
   }

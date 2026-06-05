@@ -1456,6 +1456,39 @@ main {
   cursor: not-allowed;
 }
 
+.stat-hex.currency .stat-value {
+  color: #fde047;
+  text-shadow: 0 0 10px rgba(253, 224, 71, 0.35);
+}
+
+.modal-yen {
+  color: #fde047;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.5rem;
+  position: relative;
+  text-shadow: 0 0 12px rgba(253, 224, 71, 0.4);
+}
+
+.yen-table .rate-row {
+  justify-content: space-between;
+}
+
+.yen-reward {
+  font-family: var(--font-display);
+  font-size: 0.95rem !important;
+  color: #fde047 !important;
+  min-width: auto !important;
+}
+
+.yen-dup {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
 .stat-hex.fingers .stat-value { color: #f87171; }
 .fingers-fill { background: linear-gradient(90deg, #dc2626, #f87171); }
 

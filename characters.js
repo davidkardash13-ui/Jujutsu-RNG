@@ -7,6 +7,7 @@ const RARITIES = {
     glow: 'rgba(148, 163, 184, 0.5)',
     weight: 48,
     order: 0,
+    currencyReward: 10,
   },
   grade4: {
     id: 'grade4',
@@ -15,6 +16,7 @@ const RARITIES = {
     glow: 'rgba(74, 222, 128, 0.55)',
     weight: 28,
     order: 1,
+    currencyReward: 30,
   },
   grade3: {
     id: 'grade3',
@@ -23,6 +25,7 @@ const RARITIES = {
     glow: 'rgba(56, 189, 248, 0.55)',
     weight: 14,
     order: 2,
+    currencyReward: 75,
   },
   grade2: {
     id: 'grade2',
@@ -31,6 +34,7 @@ const RARITIES = {
     glow: 'rgba(192, 132, 252, 0.6)',
     weight: 7,
     order: 3,
+    currencyReward: 200,
   },
   grade1: {
     id: 'grade1',
@@ -39,6 +43,7 @@ const RARITIES = {
     glow: 'rgba(251, 191, 36, 0.65)',
     weight: 2.4,
     order: 4,
+    currencyReward: 500,
   },
   special: {
     id: 'special',
@@ -47,6 +52,7 @@ const RARITIES = {
     glow: 'rgba(248, 113, 113, 0.75)',
     weight: 0.6,
     order: 5,
+    currencyReward: 1500,
   },
   secret: {
     id: 'secret',
@@ -55,6 +61,7 @@ const RARITIES = {
     glow: 'rgba(232, 121, 249, 0.85)',
     weight: 0.08,
     order: 6,
+    currencyReward: 5000,
   },
   event: {
     id: 'event',
@@ -63,6 +70,7 @@ const RARITIES = {
     glow: 'rgba(45, 212, 191, 0.75)',
     weight: 0,
     order: 7,
+    currencyReward: 1200,
   },
 };
 
